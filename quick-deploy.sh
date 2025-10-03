@@ -62,6 +62,10 @@ if [ -f /etc/spheres-of-influence/cognito.env ]; then
   echo "🔐 Applying Cognito configuration overrides"
   apply_env_overrides /etc/spheres-of-influence/cognito.env
 fi
+if [ -f "$SCRIPT_DIR/cognito.env" ]; then
+  echo "🔐 Applying Cognito overrides from cognito.env"
+  apply_env_overrides "$SCRIPT_DIR/cognito.env"
+fi
 
 sed -i "s/^DOMAIN=.*/DOMAIN=$DOMAIN/" .env
 sed -i "s/^CERTBOT_EMAIL=.*/CERTBOT_EMAIL=$EMAIL/" .env

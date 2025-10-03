@@ -145,13 +145,15 @@ terraform init
 terraform apply
 ```
 
-5. Once the instance finishes bootstrapping, SSH in (`ssh ec2-user@<ec2_public_ip>`) and run the helper script if auto-deploy was not enabled:
+5. Back in the repository root, run `./scripts/export-cognito-env.sh` to materialise the Cognito identifiers in `cognito.env`, then copy that file to the EC2 host and place it at `/etc/spheres-of-influence/cognito.env` (for example, `scp cognito.env ec2-user@<ec2_public_ip>:/tmp && sudo mv /tmp/cognito.env /etc/spheres-of-influence/`).
+
+6. Once the instance finishes bootstrapping, SSH in (`ssh ec2-user@<ec2_public_ip>`) and run the helper script if auto-deploy was not enabled:
 
 ```bash
 sudo /usr/local/bin/deploy-spheres.sh sphereofinfluence.click ops@sphereofinfluence.click production
 ```
 
-The `ec2_public_ip`, `route53_name_servers`, and Cognito IDs are all surfaced as outputs for wiring the frontend.
+The `ec2_public_ip`, `route53_name_servers`, and Cognito IDs are all surfaced as outputs for wiring the frontend, and quick-deploy will automatically consume the copied `cognito.env`.
 
 ### Optional: restore the ECS/Fargate deployment
 
