@@ -19,6 +19,8 @@ resource "aws_cognito_user_pool" "main" {
   user_attribute_update_settings {
     attributes_require_verification_before_update = ["email"]
   }
+
+  tags = local.common_tags
 }
 
 resource "aws_cognito_user_pool_client" "main" {

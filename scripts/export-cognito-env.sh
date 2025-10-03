@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-INFRA_DIR="$ROOT_DIR/infra"
+TF_DIR="$ROOT_DIR/terraform"
 OUTPUT_FILE="$ROOT_DIR/cognito.env"
 
 if ! command -v terraform >/dev/null; then
@@ -15,12 +15,12 @@ if ! command -v jq >/dev/null; then
   exit 1
 fi
 
-if [ ! -d "$INFRA_DIR" ]; then
-  echo "Unable to locate infra/ directory (looked in $INFRA_DIR)." >&2
+if [ ! -d "$TF_DIR" ]; then
+  echo "Unable to locate terraform/ directory (looked in $TF_DIR)." >&2
   exit 1
 fi
 
-pushd "$INFRA_DIR" >/dev/null
+pushd "$TF_DIR" >/dev/null
 
 if ! terraform output -json >/dev/null 2>&1; then
   echo "Terraform outputs are unavailable. Run 'terraform apply' first." >&2

@@ -1,3 +1,8 @@
+output "aws_region" {
+  description = "AWS region where resources are deployed"
+  value       = var.aws_region
+}
+
 output "user_pool_id" {
   description = "Cognito User Pool ID"
   value       = aws_cognito_user_pool.main.id
@@ -20,18 +25,22 @@ output "alb_dns_name" {
 
 output "frontend_url" {
   description = "Public URL for the frontend"
-  value = local.enable_ecs ? "http://${aws_lb.main[0].dns_name}" : (
-    local.enable_ec2 && local.domain_specified ? "https://${local.normalized_domain}" : (
-      local.enable_ec2 ? "http://${aws_eip.host[0].public_ip}" : ""
+  value = local.enable_ecs && local.domain_specified ? "https://${local.normalized_domain}" : (
+    local.enable_ecs ? "http://${aws_lb.main[0].dns_name}" : (
+      local.enable_ec2 && local.domain_specified ? "https://${local.normalized_domain}" : (
+        local.enable_ec2 ? "http://${aws_eip.host[0].public_ip}" : ""
+      )
     )
   )
 }
 
 output "backend_url" {
   description = "Public URL for the backend"
-  value = local.enable_ecs ? "http://${aws_lb.main[0].dns_name}:8080" : (
-    local.enable_ec2 && local.domain_specified ? "https://${local.normalized_domain}/api" : (
-      local.enable_ec2 ? "http://${aws_eip.host[0].public_ip}:8080" : ""
+  value = local.enable_ecs && local.domain_specified ? "https://${local.normalized_domain}/api" : (
+    local.enable_ecs ? "http://${aws_lb.main[0].dns_name}:8080" : (
+      local.enable_ec2 && local.domain_specified ? "https://${local.normalized_domain}/api" : (
+        local.enable_ec2 ? "http://${aws_eip.host[0].public_ip}:8080" : ""
+      )
     )
   )
 }
@@ -42,7 +51,7 @@ output "ec2_public_ip" {
 }
 
 output "ec2_instance_id" {
-  description = "Instance ID of the EC2 deployment host"
+  description = "EC2 host instance ID"
   value       = local.enable_ec2 ? aws_instance.host[0].id : ""
 }
 

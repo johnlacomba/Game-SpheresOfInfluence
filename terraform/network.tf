@@ -5,11 +5,13 @@ module "vpc" {
   name = local.project_name
   cidr = var.vpc_cidr
 
-  azs             = var.availability_zones
-  public_subnets  = var.public_subnets
-  enable_nat_gateway = false
+  azs                 = var.availability_zones
+  public_subnets      = var.public_subnets
+  enable_nat_gateway  = false
   enable_dns_hostnames = true
   enable_dns_support   = true
+
+  tags = local.common_tags
 }
 
 resource "aws_security_group" "host" {
@@ -50,9 +52,7 @@ resource "aws_security_group" "host" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "${local.project_name}-host"
-  }
+  tags = local.common_tags
 }
 
 resource "aws_security_group" "alb" {
@@ -79,14 +79,13 @@ resource "aws_security_group" "alb" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = {
-    Name = "${local.project_name}-alb"
-  }
+
+  tags = local.common_tags
 }
 
 resource "aws_security_group" "tasks" {
@@ -97,22 +96,21 @@ resource "aws_security_group" "tasks" {
   vpc_id      = module.vpc.vpc_id
 
   ingress {
-    description      = "From ALB"
-    from_port        = 0
-    to_port          = 65535
-    protocol         = "tcp"
-    security_groups  = [aws_security_group.alb[0].id]
+    description     = "From ALB"
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb[0].id]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = {
-    Name = "${local.project_name}-tasks"
-  }
+
+  tags = local.common_tags
 }
 
 resource "aws_lb" "main" {
@@ -121,6 +119,8 @@ resource "aws_lb" "main" {
   load_balancer_type = "application"
   subnets            = module.vpc.public_subnets
   security_groups    = [aws_security_group.alb[0].id]
+
+  tags = local.common_tags
 }
 
 resource "aws_lb_target_group" "frontend" {
@@ -139,6 +139,8 @@ resource "aws_lb_target_group" "frontend" {
     timeout             = 5
     matcher             = "200-399"
   }
+
+  tags = local.common_tags
 }
 
 resource "aws_lb_target_group" "backend" {
@@ -157,6 +159,8 @@ resource "aws_lb_target_group" "backend" {
     timeout             = 5
     matcher             = "200"
   }
+
+  tags = local.common_tags
 }
 
 resource "aws_lb_listener" "frontend" {

@@ -16,7 +16,7 @@ Spheres of Influence is a multiplayer territory-control game featuring a procedu
 ```
 backend/   Go API & game simulation logic
 frontend/  React client (Vite + TypeScript)
-infra/     Terraform configuration for AWS deployment
+terraform/ Terraform configuration for AWS deployment
 ```
 
 ## Local development
@@ -140,7 +140,7 @@ oauth_logout_urls = ["https://sphereofinfluence.click"]
 4. Apply the stack:
 
 ```bash
-cd infra
+cd terraform
 terraform init
 terraform apply
 ```

@@ -18,10 +18,10 @@ backend/server
 backend/bin
 
 # Terraform
-infra/.terraform/
-infra/*.tfstate
-infra/*.tfstate.backup
-infra/terraform.tfvars
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/terraform.tfvars
 
 # macOS
 .DS_Store

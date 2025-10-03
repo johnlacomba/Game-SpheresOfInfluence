@@ -1,27 +1,32 @@
-# Example configuration for provisioning the EC2 quick-deploy host
-# Copy to terraform.tfvars and adjust to match your AWS account & domain.
+# Copy to terraform.tfvars and adjust values for your environment.
 
-enable_ec2           = true
-enable_ecs           = false
 aws_region           = "us-east-1"
 project_name         = "spheres-of-influence"
+environment          = "production"
+
+# Quick-deploy EC2 host (default path)
+enable_ec2           = true
+enable_ecs           = false
 ssh_key_name         = "my-existing-keypair"
 domain_name          = "sphereofinfluence.click"
 admin_email          = "ops@sphereofinfluence.click"
 deployment_mode      = "production"
+cognito_domain_prefix = "soi-demo-001"
 git_repo_url         = "https://github.com/johnlacomba/Game-SpheresOfInfluence.git"
 git_branch           = "main"
-cognito_domain_prefix = "soi-demo-001"
-oauth_callback_urls  = [
+
+oauth_callback_urls = [
   "https://sphereofinfluence.click",
   "https://sphereofinfluence.click/auth/callback"
 ]
-oauth_logout_urls    = [
+
+oauth_logout_urls = [
   "https://sphereofinfluence.click"
 ]
 
-# Uncomment to re-enable the Fargate stack instead of the EC2 host
+# Uncomment to enable the original ECS/Fargate deployment instead of the EC2 host.
 # enable_ec2      = false
 # enable_ecs      = true
 # backend_image   = "123456789012.dkr.ecr.us-east-1.amazonaws.com/spheres-backend:latest"
 # frontend_image  = "123456789012.dkr.ecr.us-east-1.amazonaws.com/spheres-frontend:latest"
+# desired_count   = 2

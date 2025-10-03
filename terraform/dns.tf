@@ -9,9 +9,7 @@ resource "aws_route53_zone" "primary" {
   comment       = "Public hosted zone for ${local.project_name}"
   force_destroy = false
 
-  tags = {
-    Name = "${local.project_name}-zone"
-  }
+  tags = local.common_tags
 }
 
 resource "aws_route53_record" "apex_eip" {

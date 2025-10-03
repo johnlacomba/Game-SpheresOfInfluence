@@ -14,41 +14,42 @@ COGNITO_REGION="${cognito_region}"
 COGNITO_USER_POOL_ID="${cognito_user_pool_id}"
 COGNITO_APP_CLIENT_ID="${cognito_app_client_id}"
 
-dnf update -y
-dnf install -y docker git jq unzip
-dnf install -y docker-compose-plugin
+# System packages
+sudo dnf update -y
+sudo dnf install -y docker git jq unzip
+sudo dnf install -y docker-compose-plugin
 
-systemctl enable docker
-systemctl start docker
+sudo systemctl enable docker
+sudo systemctl start docker
 
-usermod -aG docker ec2-user || true
+sudo usermod -aG docker ec2-user || true
 
 if [ ! -f /usr/local/bin/docker-compose ] && [ -f /usr/libexec/docker/cli-plugins/docker-compose ]; then
-  ln -s /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
+  sudo ln -s /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
 fi
 
-mkdir -p "$${PROJECT_ROOT}"
-chown ec2-user:ec2-user "$${PROJECT_ROOT}"
+sudo mkdir -p "$PROJECT_ROOT"
+sudo chown ec2-user:ec2-user "$PROJECT_ROOT"
 
-if [ ! -d "$${PROJECT_ROOT}/.git" ]; then
-  sudo -u ec2-user git clone --branch "$${REPO_BRANCH}" --depth 1 "$${REPO_URL}" "$${PROJECT_ROOT}"
+if [ ! -d "$PROJECT_ROOT/.git" ]; then
+  sudo -u ec2-user git clone --branch "$REPO_BRANCH" --depth 1 "$REPO_URL" "$PROJECT_ROOT"
 else
-  sudo -u ec2-user bash -c "cd \"$${PROJECT_ROOT}\" && git fetch --depth 1 origin \"$${REPO_BRANCH}\" && git checkout \"$${REPO_BRANCH}\" && git pull --ff-only origin \"$${REPO_BRANCH}\""
+  sudo -u ec2-user bash -c "cd '$PROJECT_ROOT' && git fetch --depth 1 origin '$REPO_BRANCH' && git checkout '$REPO_BRANCH' && git pull --ff-only origin '$REPO_BRANCH'"
 fi
 
-mkdir -p /etc/spheres-of-influence
-cat <<ENVFILE >/etc/spheres-of-influence/cognito.env
+sudo mkdir -p /etc/spheres-of-influence
+cat <<ENVFILE | sudo tee /etc/spheres-of-influence/cognito.env >/dev/null
 # Managed by Terraform user-data. Do not edit manually.
-COGNITO_REGION=$${COGNITO_REGION}
-COGNITO_USER_POOL_ID=$${COGNITO_USER_POOL_ID}
-COGNITO_APP_CLIENT_ID=$${COGNITO_APP_CLIENT_ID}
-VITE_COGNITO_REGION=$${COGNITO_REGION}
-VITE_COGNITO_USER_POOL_ID=$${COGNITO_USER_POOL_ID}
-VITE_COGNITO_APP_CLIENT_ID=$${COGNITO_APP_CLIENT_ID}
+COGNITO_REGION=$COGNITO_REGION
+COGNITO_USER_POOL_ID=$COGNITO_USER_POOL_ID
+COGNITO_APP_CLIENT_ID=$COGNITO_APP_CLIENT_ID
+VITE_COGNITO_REGION=$COGNITO_REGION
+VITE_COGNITO_USER_POOL_ID=$COGNITO_USER_POOL_ID
+VITE_COGNITO_APP_CLIENT_ID=$COGNITO_APP_CLIENT_ID
 ENVFILE
-chmod 644 /etc/spheres-of-influence/cognito.env
+sudo chmod 644 /etc/spheres-of-influence/cognito.env
 
-cat <<'SCRIPT' >/usr/local/bin/deploy-spheres.sh
+cat <<'SCRIPT' | sudo tee /usr/local/bin/deploy-spheres.sh >/dev/null
 #!/bin/bash
 set -euo pipefail
 
@@ -76,16 +77,16 @@ if [ $# -ge 3 ]; then
   MODE="$3"
 fi
 
-cd "$${PROJECT_ROOT}"
+cd "$PROJECT_ROOT"
 ./cleanupDocker.sh || true
 ./quick-deploy.sh "$DOMAIN" "$EMAIL" "$MODE"
 SCRIPT
 
-chmod +x /usr/local/bin/deploy-spheres.sh
-chown root:root /usr/local/bin/deploy-spheres.sh
+sudo chmod +x /usr/local/bin/deploy-spheres.sh
+sudo chown root:root /usr/local/bin/deploy-spheres.sh
 
 if [ ! -f /etc/profile.d/spheres-of-influence.sh ]; then
-  cat <<'MOTD' >/etc/profile.d/spheres-of-influence.sh
+  cat <<'MOTD' | sudo tee /etc/profile.d/spheres-of-influence.sh >/dev/null
 #!/bin/bash
 cat <<'EOF'
 ============================================================
@@ -98,7 +99,7 @@ The project code lives in /opt/${project_name}
 ============================================================
 EOF
 MOTD
-  chmod +x /etc/profile.d/spheres-of-influence.sh
+  sudo chmod +x /etc/profile.d/spheres-of-influence.sh
 fi
 
 %{ if length(trimspace(additional_commands)) > 0 }

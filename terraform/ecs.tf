@@ -1,7 +1,14 @@
-resource "aws_ecs_cluster" "this" {
+resource "aws_ecs_cluster" "main" {
   count = local.enable_ecs ? 1 : 0
 
-  name = "${local.project_name}-cluster"
+  name = "${local.project_name}-${local.environment}-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
+  tags = local.common_tags
 }
 
 resource "aws_cloudwatch_log_group" "backend" {
@@ -9,6 +16,8 @@ resource "aws_cloudwatch_log_group" "backend" {
 
   name              = "/ecs/${local.project_name}-backend"
   retention_in_days = 30
+
+  tags = local.common_tags
 }
 
 resource "aws_cloudwatch_log_group" "frontend" {
@@ -16,51 +25,56 @@ resource "aws_cloudwatch_log_group" "frontend" {
 
   name              = "/ecs/${local.project_name}-frontend"
   retention_in_days = 30
+
+  tags = local.common_tags
 }
 
-resource "aws_iam_role" "task_execution" {
+resource "aws_iam_role" "ecs_execution" {
   count = local.enable_ecs ? 1 : 0
 
-  name = "${local.project_name}-execution-role"
+  name = "${local.project_name}-${local.environment}-ecs-execution"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
+        Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
           Service = "ecs-tasks.amazonaws.com"
         }
-        Action = "sts:AssumeRole"
       }
     ]
   })
+
+  tags = local.common_tags
 }
 
-resource "aws_iam_role_policy_attachment" "task_execution" {
-  count = local.enable_ecs ? 1 : 0
-
-  role       = aws_iam_role.task_execution[0].name
+resource "aws_iam_role_policy_attachment" "ecs_execution" {
+  count      = local.enable_ecs ? 1 : 0
+  role       = aws_iam_role.ecs_execution[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-resource "aws_iam_role" "task" {
+resource "aws_iam_role" "ecs_task" {
   count = local.enable_ecs ? 1 : 0
 
-  name = "${local.project_name}-task-role"
+  name = "${local.project_name}-${local.environment}-ecs-task"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
+        Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
           Service = "ecs-tasks.amazonaws.com"
         }
-        Action = "sts:AssumeRole"
       }
     ]
   })
+
+  tags = local.common_tags
 }
 
 resource "aws_ecs_task_definition" "backend" {
@@ -71,8 +85,8 @@ resource "aws_ecs_task_definition" "backend" {
   memory                   = "1024"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = aws_iam_role.task_execution[0].arn
-  task_role_arn            = aws_iam_role.task[0].arn
+  execution_role_arn       = aws_iam_role.ecs_execution[0].arn
+  task_role_arn            = aws_iam_role.ecs_task[0].arn
 
   container_definitions = jsonencode([
     {
@@ -107,6 +121,8 @@ resource "aws_ecs_task_definition" "backend" {
       }
     }
   ])
+
+  tags = local.common_tags
 }
 
 resource "aws_ecs_task_definition" "frontend" {
@@ -117,8 +133,8 @@ resource "aws_ecs_task_definition" "frontend" {
   memory                   = "512"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = aws_iam_role.task_execution[0].arn
-  task_role_arn            = aws_iam_role.task[0].arn
+  execution_role_arn       = aws_iam_role.ecs_execution[0].arn
+  task_role_arn            = aws_iam_role.ecs_task[0].arn
 
   container_definitions = jsonencode([
     {
@@ -132,7 +148,6 @@ resource "aws_ecs_task_definition" "frontend" {
           protocol      = "tcp"
         }
       ]
-      environment = []
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -143,13 +158,15 @@ resource "aws_ecs_task_definition" "frontend" {
       }
     }
   ])
+
+  tags = local.common_tags
 }
 
 resource "aws_ecs_service" "backend" {
   count = local.enable_ecs ? 1 : 0
 
   name            = "${local.project_name}-backend"
-  cluster         = aws_ecs_cluster.this[0].id
+  cluster         = aws_ecs_cluster.main[0].id
   task_definition = aws_ecs_task_definition.backend[0].arn
   desired_count   = var.desired_count
   launch_type     = "FARGATE"
@@ -165,13 +182,15 @@ resource "aws_ecs_service" "backend" {
     container_name   = "backend"
     container_port   = 8080
   }
+
+  depends_on = [aws_lb_listener.backend]
 }
 
 resource "aws_ecs_service" "frontend" {
   count = local.enable_ecs ? 1 : 0
 
   name            = "${local.project_name}-frontend"
-  cluster         = aws_ecs_cluster.this[0].id
+  cluster         = aws_ecs_cluster.main[0].id
   task_definition = aws_ecs_task_definition.frontend[0].arn
   desired_count   = var.desired_count
   launch_type     = "FARGATE"
@@ -187,4 +206,6 @@ resource "aws_ecs_service" "frontend" {
     container_name   = "frontend"
     container_port   = 80
   }
+
+  depends_on = [aws_lb_listener.frontend]
 }
