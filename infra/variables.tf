@@ -46,7 +46,7 @@ variable "ssh_key_name" {
   default     = ""
 
   validation {
-    condition     = !var.enable_ec2 || length(trim(var.ssh_key_name)) > 0
+    condition     = !var.enable_ec2 || length(trimspace(var.ssh_key_name)) > 0
     error_message = "ssh_key_name must be provided when enable_ec2 is true."
   }
 }
