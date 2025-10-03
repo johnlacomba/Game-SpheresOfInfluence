@@ -75,6 +75,9 @@ resource "aws_instance" "host" {
     git_repo_url        = var.git_repo_url
     git_branch          = var.git_branch
     deployment_mode     = var.deployment_mode
+    cognito_region      = var.aws_region
+    cognito_user_pool_id = aws_cognito_user_pool.main.id
+    cognito_app_client_id = aws_cognito_user_pool_client.main.id
     auto_deploy         = var.auto_deploy_on_boot ? "true" : "false"
     additional_commands = var.user_data_additional_commands
   })

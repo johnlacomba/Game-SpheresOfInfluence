@@ -87,7 +87,7 @@ The project mirrors the deployment workflow from the Space Trading Sim repo. Thr
 
 - `cleanupDocker.sh` – stops/removes all containers and prunes Docker data.
 - `setup-ssl.sh <domain> [email]` – provisions Let's Encrypt certificates using the compose `certbot` profile.
-- `quick-deploy.sh <domain> <email> <mode>` – rebuilds images/assets and starts the stack with SSL and reverse proxy wiring. Modes: `development` (default) or `production`.
+- `quick-deploy.sh <domain> <email> <mode>` – rebuilds images/assets and starts the stack with SSL and reverse proxy wiring. Modes: `development` (default) or `production`. When running on the Terraform-provisioned EC2 host the script also loads Cognito IDs from `/etc/spheres-of-influence/cognito.env`, which is generated automatically during instance bootstrap.
 
 Example one-liner (mirroring the original workflow):
 

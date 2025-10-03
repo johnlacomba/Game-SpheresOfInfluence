@@ -10,6 +10,9 @@ FALLBACK_DOMAIN="${fallback_domain}"
 DEFAULT_EMAIL="${admin_email}"
 DEFAULT_MODE="${deployment_mode}"
 AUTO_DEPLOY="${auto_deploy}"
+COGNITO_REGION="${cognito_region}"
+COGNITO_USER_POOL_ID="${cognito_user_pool_id}"
+COGNITO_APP_CLIENT_ID="${cognito_app_client_id}"
 
 dnf update -y
 dnf install -y docker git jq unzip
@@ -32,6 +35,18 @@ if [ ! -d "$${PROJECT_ROOT}/.git" ]; then
 else
   sudo -u ec2-user bash -c "cd \"$${PROJECT_ROOT}\" && git fetch --depth 1 origin \"$${REPO_BRANCH}\" && git checkout \"$${REPO_BRANCH}\" && git pull --ff-only origin \"$${REPO_BRANCH}\""
 fi
+
+mkdir -p /etc/spheres-of-influence
+cat <<ENVFILE >/etc/spheres-of-influence/cognito.env
+# Managed by Terraform user-data. Do not edit manually.
+COGNITO_REGION=$${COGNITO_REGION}
+COGNITO_USER_POOL_ID=$${COGNITO_USER_POOL_ID}
+COGNITO_APP_CLIENT_ID=$${COGNITO_APP_CLIENT_ID}
+VITE_COGNITO_REGION=$${COGNITO_REGION}
+VITE_COGNITO_USER_POOL_ID=$${COGNITO_USER_POOL_ID}
+VITE_COGNITO_APP_CLIENT_ID=$${COGNITO_APP_CLIENT_ID}
+ENVFILE
+chmod 644 /etc/spheres-of-influence/cognito.env
 
 cat <<'SCRIPT' >/usr/local/bin/deploy-spheres.sh
 #!/bin/bash

@@ -30,7 +30,38 @@ if [ ! -f .env.docker ]; then
   exit 1
 fi
 
+update_env_var() {
+  local key="$1"
+  local value="$2"
+  local escaped
+  escaped=$(printf '%s' "$value" | sed 's/[\\&/]/\\&/g')
+  if grep -q "^${key}=" .env 2>/dev/null; then
+    sed -i "s|^${key}=.*|${key}=${escaped}|" .env
+  else
+    echo "${key}=${value}" >> .env
+  fi
+}
+
+apply_env_overrides() {
+  local file="$1"
+  [ ! -f "$file" ] && return
+  while IFS='=' read -r raw_key raw_value; do
+    [ -z "$raw_key" ] && continue
+    case "$raw_key" in
+      \#*) continue ;;
+    esac
+    local key value
+    key=$(echo "$raw_key" | tr -d ' ')
+    value=$(printf '%s' "$raw_value" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    update_env_var "$key" "$value"
+  done < "$file"
+}
+
 cp .env.docker .env
+if [ -f /etc/spheres-of-influence/cognito.env ]; then
+  echo "🔐 Applying Cognito configuration overrides"
+  apply_env_overrides /etc/spheres-of-influence/cognito.env
+fi
 
 sed -i "s/^DOMAIN=.*/DOMAIN=$DOMAIN/" .env
 sed -i "s/^CERTBOT_EMAIL=.*/CERTBOT_EMAIL=$EMAIL/" .env
