@@ -28,9 +28,9 @@ mkdir -p "$${PROJECT_ROOT}"
 chown ec2-user:ec2-user "$${PROJECT_ROOT}"
 
 if [ ! -d "$${PROJECT_ROOT}/.git" ]; then
-  sudo -u ec2-user git clone --branch "${REPO_BRANCH}" --depth 1 "${REPO_URL}" "$${PROJECT_ROOT}"
+  sudo -u ec2-user git clone --branch "$${REPO_BRANCH}" --depth 1 "$${REPO_URL}" "$${PROJECT_ROOT}"
 else
-  sudo -u ec2-user bash -c "cd '$${PROJECT_ROOT}' && git fetch --depth 1 origin '${REPO_BRANCH}' && git checkout '${REPO_BRANCH}' && git pull --ff-only origin '${REPO_BRANCH}'"
+  sudo -u ec2-user bash -c "cd \"$${PROJECT_ROOT}\" && git fetch --depth 1 origin \"$${REPO_BRANCH}\" && git checkout \"$${REPO_BRANCH}\" && git pull --ff-only origin \"$${REPO_BRANCH}\""
 fi
 
 cat <<'SCRIPT' >/usr/local/bin/deploy-spheres.sh
