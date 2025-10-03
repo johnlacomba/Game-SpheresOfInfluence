@@ -33,6 +33,10 @@ COGNITO_REGION=$(echo "$OUTPUT_JSON" | jq -r '.aws_region.value // empty')
 USER_POOL_ID=$(echo "$OUTPUT_JSON" | jq -r '.user_pool_id.value // empty')
 APP_CLIENT_ID=$(echo "$OUTPUT_JSON" | jq -r '.user_pool_client_id.value // empty')
 
+if [ -z "$COGNITO_REGION" ] && [ -n "$USER_POOL_ID" ] && [[ "$USER_POOL_ID" == *_* ]]; then
+  COGNITO_REGION=${USER_POOL_ID%%_*}
+fi
+
 if [ -z "$COGNITO_REGION" ] || [ -z "$USER_POOL_ID" ] || [ -z "$APP_CLIENT_ID" ]; then
   echo "Missing required Cognito outputs. Ensure terraform apply succeeded." >&2
   exit 1
