@@ -1,0 +1,27 @@
+# Node
+frontend/node_modules
+frontend/dist
+
+# Docker deploy artifacts
+.env
+ssl/
+nginx/default.conf
+nginx/webroot/*
+!nginx/webroot/.gitkeep
+nginx/logs/*
+!nginx/logs/.gitkeep
+certbot/logs/*
+!certbot/logs/.gitkeep
+
+# Go binaries
+backend/server
+backend/bin
+
+# Terraform
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.backup
+infra/terraform.tfvars
+
+# macOS
+.DS_Store

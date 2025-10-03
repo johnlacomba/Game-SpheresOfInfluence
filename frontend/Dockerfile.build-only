@@ -1,0 +1,41 @@
+# Build static assets and copy them into a shared volume
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+COPY . .
+
+ARG NODE_ENV=production
+ENV NODE_ENV=$NODE_ENV
+
+ARG VITE_BACKEND_URL
+ARG VITE_COGNITO_REGION
+ARG VITE_COGNITO_USER_POOL_ID
+ARG VITE_COGNITO_APP_CLIENT_ID
+ARG VITE_DEBUG_PLAYER_ID
+
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL \
+    VITE_COGNITO_REGION=$VITE_COGNITO_REGION \
+    VITE_COGNITO_USER_POOL_ID=$VITE_COGNITO_USER_POOL_ID \
+    VITE_COGNITO_APP_CLIENT_ID=$VITE_COGNITO_APP_CLIENT_ID \
+    VITE_DEBUG_PLAYER_ID=$VITE_DEBUG_PLAYER_ID
+
+RUN npm run build
+
+FROM alpine:3.19
+
+COPY --from=builder /app/dist /output
+
+RUN apk add --no-cache bash coreutils && \
+    echo '#!/bin/sh' > /copy-dist.sh && \
+    echo 'mkdir -p /app/dist' >> /copy-dist.sh && \
+    echo 'cp -rf /output/* /app/dist/ 2>/dev/null || true' >> /copy-dist.sh && \
+    echo 'echo "✅ Frontend build complete"' >> /copy-dist.sh && \
+    chmod +x /copy-dist.sh
+
+VOLUME ["/app/dist"]
+
+ENTRYPOINT ["/copy-dist.sh"]

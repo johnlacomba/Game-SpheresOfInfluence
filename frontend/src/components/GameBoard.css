@@ -1,0 +1,45 @@
+.game-board {
+  display: grid;
+  width: min(90vw, 960px);
+  aspect-ratio: 1 / 1;
+  max-height: 80vh;
+  gap: 1px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 10px;
+  padding: 6px;
+}
+
+.tile-cell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  border: 1px solid rgba(15, 23, 42, 0.5);
+  transition: transform 0.2s ease;
+}
+
+.tile-cell:hover {
+  transform: scale(1.04);
+  z-index: 2;
+}
+
+.tile-core {
+  border: 2px solid rgba(0, 0, 0, 0.9);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.tile-resource-base {
+  box-shadow: inset 0 0 8px rgba(250, 204, 21, 0.4);
+}
+
+.resource-pill {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 40%;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fde047 0%, #facc15 100%);
+  border: 2px solid #0f172a;
+  transform: translate(-50%, -50%);
+}
