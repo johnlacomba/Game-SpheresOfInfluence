@@ -86,7 +86,7 @@ MOTD
   chmod +x /etc/profile.d/spheres-of-influence.sh
 fi
 
-%{ if length(trim(additional_commands)) > 0 }
+%{ if length(trimspace(additional_commands)) > 0 }
 # Additional user-supplied bootstrap commands
 ${additional_commands}
 %{ endif }
